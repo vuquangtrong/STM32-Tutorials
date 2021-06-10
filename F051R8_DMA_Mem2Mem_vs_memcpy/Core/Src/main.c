@@ -33,6 +33,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define USE_DMA_INTERRUPT
+#define USE_DMA_WORD_ALIGN
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -116,7 +117,11 @@ int main(void)
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
   HAL_DMA_RegisterCallback(&hdma_memtomem_dma1_channel1, HAL_DMA_XFER_HALFCPLT_CB_ID, DMA_HalfTransferCallback);
   HAL_DMA_RegisterCallback(&hdma_memtomem_dma1_channel1, HAL_DMA_XFER_CPLT_CB_ID, DMA_FullTransferCallback);
+#ifdef USE_DMA_WORD_ALIGN
+  HAL_DMA_Start_IT(&hdma_memtomem_dma1_channel1, (uint32_t)&flash_data, (uint32_t)&sram_buffer, TRANSFER_SIZE/4);
+#else
   HAL_DMA_Start_IT(&hdma_memtomem_dma1_channel1, (uint32_t)&flash_data, (uint32_t)&sram_buffer, TRANSFER_SIZE);
+#endif
 #else
   HAL_Delay(1);
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
@@ -190,8 +195,13 @@ static void MX_DMA_Init(void)
   hdma_memtomem_dma1_channel1.Init.Direction = DMA_MEMORY_TO_MEMORY;
   hdma_memtomem_dma1_channel1.Init.PeriphInc = DMA_PINC_ENABLE;
   hdma_memtomem_dma1_channel1.Init.MemInc = DMA_MINC_ENABLE;
+#ifdef USE_DMA_WORD_ALIGN
+  hdma_memtomem_dma1_channel1.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+  hdma_memtomem_dma1_channel1.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
+#else
   hdma_memtomem_dma1_channel1.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
   hdma_memtomem_dma1_channel1.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+#endif
   hdma_memtomem_dma1_channel1.Init.Mode = DMA_NORMAL;
   hdma_memtomem_dma1_channel1.Init.Priority = DMA_PRIORITY_LOW;
   if (HAL_DMA_Init(&hdma_memtomem_dma1_channel1) != HAL_OK)
