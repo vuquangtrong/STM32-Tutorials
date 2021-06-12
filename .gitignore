@@ -53,3 +53,4 @@ dkms.conf
 
 # STM32CubeIDE
 .metadata/
+RemoteSystemsTempFiles/
