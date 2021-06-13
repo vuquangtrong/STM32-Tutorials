@@ -45,7 +45,8 @@
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
-char counter = 0;
+unsigned char counter = 0;
+unsigned char max = 255;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -96,11 +97,14 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-    counter++;
-    printf("counter=%03d\n\r", counter);
-
+  printf("Set max counter: ");
+  scanf("%u", &max);
+  printf("Count to %d\n\r", max);
+  while (1) {
+    printf("counter=%03d\n\r", counter++);
+    if (counter > (char) max) {
+      counter = 0;
+    }
     HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
     HAL_Delay(500);
     /* USER CODE END WHILE */
