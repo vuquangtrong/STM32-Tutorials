@@ -6,7 +6,6 @@
  */
 
 #include <stdio.h>
-#include <errno.h>
 #include <uart_redirection.h>
 
 /* a gloable UART handler used to redirect */
@@ -24,27 +23,27 @@ void Set_UART_Redirection_Port(UART_HandleTypeDef *huart) {
 int _read(int file, char *ptr, int len) {
   HAL_StatusTypeDef hstatus;
   if (g_huart == NULL) {
-    return EIO;
+    return 0;
   }
   /* read one byte only, according to _fstat returning character device type */
   hstatus = HAL_UART_Receive(g_huart, (uint8_t*) ptr, 1, HAL_MAX_DELAY);
   if (hstatus == HAL_OK)
     return 1;
   else
-    return EIO;
+    return 0;
 }
 
 int _write(int file, char *ptr, int len) {
   HAL_StatusTypeDef hstatus;
   if (g_huart == NULL) {
-    return EIO;
+    return 0;
   }
   /* write full string */
   hstatus = HAL_UART_Transmit(g_huart, (uint8_t*) ptr, len, HAL_MAX_DELAY);
   if (hstatus == HAL_OK)
     return len;
   else
-    return EIO;
+    return 0;
 }
 
 int _close(int file) {

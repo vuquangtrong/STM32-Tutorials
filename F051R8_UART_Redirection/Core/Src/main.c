@@ -69,7 +69,7 @@ static void MX_USART1_UART_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+  int imax = 255;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -98,7 +98,8 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   printf("Set max counter: ");
-  scanf("%u", &max);
+  scanf("%d", &imax);
+  max = (unsigned char)imax;
   printf("Count to %d\n\r", max);
   while (1) {
     printf("counter=%03d\n\r", counter++);
