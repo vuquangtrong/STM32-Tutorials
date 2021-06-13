@@ -84,7 +84,7 @@ int _write(int file, char *ptr, int len) {
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+  int imax = 255;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -113,7 +113,8 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   printf("Set max counter: ");
-  scanf("%d", &max);
+  scanf("%d", &imax);
+  max = (unsigned char)imax;
   printf("Count to %d\n\r", max);
   while (1)
   {
