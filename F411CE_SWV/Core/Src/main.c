@@ -32,7 +32,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+//#define DEBUGGER_SUPPORT_ITM_RECEIVER
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -61,13 +61,8 @@ static void MX_GPIO_Init(void);
 /* USER CODE BEGIN 0 */
 int _read(int file, char *ptr, int len)
 {
-  int DataIdx;
-
-  for (DataIdx = 0; DataIdx < len; DataIdx++)
-  {
-    *ptr++ = ITM_ReceiveChar();
-  }
-  return len;
+  *ptr = ITM_ReceiveChar();
+  return 1;
 }
 
 int _write(int file, char *ptr, int len)
@@ -116,7 +111,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-#if DEBUGGER_SUPPORT_ITM_ReceiveChar
+#ifdef DEBUGGER_SUPPORT_ITM_RECEIVER
   printf("Hello! What's your name?\n");
   scanf("%s\n", buffer);
   printf("Hi, %s\n", buffer);
