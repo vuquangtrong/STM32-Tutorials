@@ -1,0 +1,12 @@
+# Types
+
+NamedType UARTx  *=%p 0x40011000=UART1 0x40004400=UART2
+NamedType TIMx   *=%p 0x40010000=TIM1  0x40000400=TIM3
+NamedType PINx   *=%u 0x0=None 0x1=PIN0 0x2=PIN1
+
+# API IDs
+
+32    Main_Loop
+33    HAL_TIM_PeriodElapsedCallback   Instance = %TIMx
+34    GPIO_EXTI_Callback              GPIO_Pin = %Pinx
+35    HAL_UART_TxCpltCallback         Instance = %UARTx
