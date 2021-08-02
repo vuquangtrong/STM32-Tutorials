@@ -40,7 +40,7 @@
 #define USE_HAL_DELAY             0
 #define USE_TASK_1_HIGH_PRIORITY  1
 #define USE_TASK_2_HIGH_PRIORITY  0
-#define KILL_TASKS                1
+#define KILL_TASKS                0
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -72,7 +72,11 @@ const char* CYAN = "\033[0;36m";
 osThreadId_t Task1_Handle;
 const osThreadAttr_t Task1_attributes = {
   .name = "Task1",
+#if KILL_TASKS
+  .stack_size = 256 * 4,
+#else
   .stack_size = 128 * 4,
+#endif
 #if USE_TASK_1_HIGH_PRIORITY
   .priority = (osPriority_t) osPriorityHigh,
 #else
@@ -84,7 +88,11 @@ uint32_t Task1_delay = 500;
 osThreadId_t Task2_Handle;
 const osThreadAttr_t Task2_attributes = {
   .name = "Task2",
+#if KILL_TASKS
+  .stack_size = 256 * 4,
+#else
   .stack_size = 128 * 4,
+#endif
 #if USE_TASK_2_HIGH_PRIORITY
   .priority = (osPriority_t) osPriorityHigh,
 #else
