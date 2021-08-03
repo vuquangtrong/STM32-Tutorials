@@ -1,10 +1,7 @@
 #MicroXplorer Configuration settings - do not modify
-FREERTOS.IPParameters=Tasks01,configENABLE_BACKWARD_COMPATIBILITY,configUSE_NEWLIB_REENTRANT
+FREERTOS.IPParameters=Tasks01
 FREERTOS.Tasks01=defaultTask,24,128,StartDefaultTask,Default,NULL,Dynamic,NULL,NULL
-FREERTOS.configENABLE_BACKWARD_COMPATIBILITY=0
-FREERTOS.configUSE_NEWLIB_REENTRANT=1
 File.Version=6
-GPIO.groupedBy=Group By Peripherals
 KeepUserPlacement=false
 Mcu.Family=STM32F4
 Mcu.IP0=FREERTOS
@@ -52,9 +49,8 @@ NVIC.TIM1_TRG_COM_TIM11_IRQn=true\:15\:0\:false\:false\:true\:false\:false\:true
 NVIC.TimeBase=TIM1_TRG_COM_TIM11_IRQn
 NVIC.TimeBaseIP=TIM11
 NVIC.UsageFault_IRQn=true\:0\:0\:false\:false\:true\:false\:false\:false
-PA0-WKUP.GPIOParameters=GPIO_PuPd,GPIO_Label,GPIO_ModeDefaultEXTI
+PA0-WKUP.GPIOParameters=GPIO_PuPd,GPIO_Label
 PA0-WKUP.GPIO_Label=KEY
-PA0-WKUP.GPIO_ModeDefaultEXTI=GPIO_MODE_IT_FALLING
 PA0-WKUP.GPIO_PuPd=GPIO_PULLUP
 PA0-WKUP.Locked=true
 PA0-WKUP.Signal=GPXTI0

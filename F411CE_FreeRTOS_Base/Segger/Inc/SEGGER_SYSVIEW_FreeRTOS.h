@@ -192,6 +192,7 @@ Notes:
 #define apiID_XSTREAMBUFFERRECEIVE                (110u)
 #define apiID_XSTREAMBUFFERRECEIVEFROMISR         (111u)
 
+#if USE_SEGGER_SYSVIEW
 #define traceTASK_NOTIFY_TAKE()                                                 SEGGER_SYSVIEW_RecordU32x2(apiID_OFFSET + apiID_ULTASKNOTIFYTAKE, xClearCountOnExit, xTicksToWait)
 #define traceTASK_DELAY()                                                       SEGGER_SYSVIEW_RecordU32  (apiID_OFFSET + apiID_VTASKDELAY, xTicksToDelay)
 #define traceTASK_DELAY_UNTIL(xTimeToWake)                                      SEGGER_SYSVIEW_RecordVoid (apiID_OFFSET + apiID_VTASKDELAYUNTIL)
@@ -306,7 +307,7 @@ Notes:
 #define traceISR_EXIT_TO_SCHEDULER()                SEGGER_SYSVIEW_RecordExitISRToScheduler()
 #define traceISR_EXIT()                             SEGGER_SYSVIEW_RecordExitISR()
 #define traceISR_ENTER()                            SEGGER_SYSVIEW_RecordEnterISR()
-
+#endif
 /*********************************************************************
 *
 *       API functions

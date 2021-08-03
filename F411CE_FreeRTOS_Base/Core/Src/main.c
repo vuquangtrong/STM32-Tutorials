@@ -25,12 +25,14 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 #include <string.h>
+#if USE_SEGGER_SYSVIEW
 #include "SEGGER_SYSVIEW.h"
 ////////////////////////////////////////////////////////////////////////////////
 //
-// RE-APPLY THE SEGGER OS PATCH AFTER USING CUBEMX TO GENERATE SOURCE CODE
+// RE-APPLY THE SEGGER FreeRTOS PATCH AFTER USING CUBEMX TO GENERATE SOURCE CODE
 //
 ////////////////////////////////////////////////////////////////////////////////
+#endif
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -40,7 +42,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define PROJECT_NAME "FreeRTOS Base"
+#define PROJECT_NAME              "FreeRTOS Base"
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -59,7 +61,7 @@ const osThreadAttr_t defaultTask_attributes = {
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* USER CODE BEGIN PV */
-uint8_t blink = 1;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -74,30 +76,18 @@ void StartDefaultTask(void *argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-int _read(int file, char *ptr, int len) {
-    HAL_StatusTypeDef hstatus;
-    hstatus = HAL_UART_Receive(&huart1, (uint8_t*) ptr, 1, HAL_MAX_DELAY);
-    if (hstatus == HAL_OK)
-        return 1;
-    else
-        return 0;
+int _write(int file, char *ptr, int len)
+{
+  // block UART if it is not ready
+  while(HAL_UART_GetState(&huart1) != HAL_UART_STATE_READY);
+  // return written bytes
+  return HAL_UART_Transmit(&huart1, (uint8_t*) ptr, len, HAL_MAX_DELAY) == 0 ? len : 0;
 }
 
-int _write(int file, char *ptr, int len) {
-    HAL_StatusTypeDef hstatus;
-    hstatus = HAL_UART_Transmit(&huart1, (uint8_t*) ptr, len, HAL_MAX_DELAY);
-    if (hstatus == HAL_OK) {
-        if (SEGGER_SYSVIEW_IsStarted()) SEGGER_SYSVIEW_PrintfHost("OK");
-        return len;
-    } else {
-        if (SEGGER_SYSVIEW_IsStarted()) SEGGER_SYSVIEW_ErrorfHost("ERR");
-        return 0;
-    }
-}
-
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-  blink = !blink;
-  SEGGER_SYSVIEW_PrintfHost("GPIO = %d", GPIO_Pin);
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  // do something here
+  printf("Key pressed\r\n");
 }
 /* USER CODE END 0 */
 
@@ -132,7 +122,10 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
   printf("%s\r\n", PROJECT_NAME);
+#if USE_SEGGER_SYSVIEW
   SEGGER_SYSVIEW_Conf();
+  printf("SEGGER SYSVIEW Enabled\r\n");
+#endif
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -174,9 +167,6 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    printf("Non-RTOS mode\r\n");
-    HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-    HAL_Delay(100);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -287,7 +277,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : KEY_Pin */
   GPIO_InitStruct.Pin = KEY_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(KEY_GPIO_Port, &GPIO_InitStruct);
 
@@ -311,15 +301,14 @@ static void MX_GPIO_Init(void)
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
+  char* name = pcTaskGetName(NULL);
+  uint8_t counter = 0;
   /* Infinite loop */
   for(;;)
   {
-    if(blink) {
-      HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-      printf("TickCount = %lu\r\n", osKernelGetTickCount());
-//      SEGGER_SYSVIEW_PrintfHost("TickCount = %d\r\n", osKernelGetTickCount());
-    }
-    osDelay(500); // 1 tick = 1 ms
+    HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+    printf("%s: heart beat %u\r\n", name, counter++);
+    osDelay(500);
   }
   /* USER CODE END 5 */
 }

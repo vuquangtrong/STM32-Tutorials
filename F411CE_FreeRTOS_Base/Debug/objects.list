@@ -1,5 +1,4 @@
 "./Core/Src/SEGGER_SYSVIEW_Config_FreeRTOS.o"
-"./Core/Src/SEGGER_SYSVIEW_FreeRTOS.o"
 "./Core/Src/freertos.o"
 "./Core/Src/main.o"
 "./Core/Src/stm32f4xx_hal_msp.o"
@@ -39,3 +38,4 @@
 "./Segger/Src/SEGGER_RTT_ASM_ARMv7M.o"
 "./Segger/Src/SEGGER_RTT_printf.o"
 "./Segger/Src/SEGGER_SYSVIEW.o"
+"./Segger/Src/SEGGER_SYSVIEW_FreeRTOS.o"
