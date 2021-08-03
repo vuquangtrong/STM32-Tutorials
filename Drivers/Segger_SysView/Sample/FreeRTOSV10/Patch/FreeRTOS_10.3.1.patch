@@ -1,7 +1,7 @@
-diff --git a/F411CE_RTOS_Simple_Tasks_SysView/Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h b/F411CE_RTOS_Simple_Tasks_SysView/Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+diff --git a/Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h b/Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
 index ceb469a..ef5c618 100644
---- a/F411CE_RTOS_Simple_Tasks_SysView/Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
-+++ b/F411CE_RTOS_Simple_Tasks_SysView/Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+--- a/Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
++++ b/Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
 @@ -160,6 +160,10 @@ extern "C" {
  	#define INCLUDE_uxTaskGetStackHighWaterMark2 0
  #endif
@@ -50,10 +50,10 @@ index ceb469a..ef5c618 100644
  #ifndef traceSTREAM_BUFFER_CREATE_FAILED
  	#define traceSTREAM_BUFFER_CREATE_FAILED( xIsMessageBuffer )
  #endif
-diff --git a/F411CE_RTOS_Simple_Tasks_SysView/Middlewares/Third_Party/FreeRTOS/Source/include/task.h b/F411CE_RTOS_Simple_Tasks_SysView/Middlewares/Third_Party/FreeRTOS/Source/include/task.h
+diff --git a/Middlewares/Third_Party/FreeRTOS/Source/include/task.h b/Middlewares/Third_Party/FreeRTOS/Source/include/task.h
 index b0cc60b..3d1cbe0 100644
---- a/F411CE_RTOS_Simple_Tasks_SysView/Middlewares/Third_Party/FreeRTOS/Source/include/task.h
-+++ b/F411CE_RTOS_Simple_Tasks_SysView/Middlewares/Third_Party/FreeRTOS/Source/include/task.h
+--- a/Middlewares/Third_Party/FreeRTOS/Source/include/task.h
++++ b/Middlewares/Third_Party/FreeRTOS/Source/include/task.h
 @@ -1468,6 +1468,25 @@ UBaseType_t uxTaskGetStackHighWaterMark( TaskHandle_t xTask ) PRIVILEGED_FUNCTIO
   */
  configSTACK_DEPTH_TYPE uxTaskGetStackHighWaterMark2( TaskHandle_t xTask ) PRIVILEGED_FUNCTION;
@@ -80,10 +80,10 @@ index b0cc60b..3d1cbe0 100644
  /* When using trace macros it is sometimes necessary to include task.h before
  FreeRTOS.h.  When this is done TaskHookFunction_t will not yet have been defined,
  so the following two prototypes will cause a compilation error.  This can be
-diff --git a/F411CE_RTOS_Simple_Tasks_SysView/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c b/F411CE_RTOS_Simple_Tasks_SysView/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c
+diff --git a/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c b/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c
 index 89a912c..42ba14b 100644
---- a/F411CE_RTOS_Simple_Tasks_SysView/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c
-+++ b/F411CE_RTOS_Simple_Tasks_SysView/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c
+--- a/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c
++++ b/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c
 @@ -492,14 +492,20 @@ void xPortSysTickHandler( void )
  	save and then restore the interrupt mask value as its value is already
  	known. */
@@ -105,10 +105,10 @@ index 89a912c..42ba14b 100644
  	}
  	portENABLE_INTERRUPTS();
  }
-diff --git a/F411CE_RTOS_Simple_Tasks_SysView/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h b/F411CE_RTOS_Simple_Tasks_SysView/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h
+diff --git a/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h b/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h
 index d0a566a..04d4f82 100644
---- a/F411CE_RTOS_Simple_Tasks_SysView/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h
-+++ b/F411CE_RTOS_Simple_Tasks_SysView/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h
+--- a/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h
++++ b/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h
 @@ -89,7 +89,7 @@ typedef unsigned long UBaseType_t;
  
  #define portNVIC_INT_CTRL_REG		( * ( ( volatile uint32_t * ) 0xe000ed04 ) )
@@ -118,10 +118,10 @@ index d0a566a..04d4f82 100644
  #define portYIELD_FROM_ISR( x ) portEND_SWITCHING_ISR( x )
  /*-----------------------------------------------------------*/
  
-diff --git a/F411CE_RTOS_Simple_Tasks_SysView/Middlewares/Third_Party/FreeRTOS/Source/tasks.c b/F411CE_RTOS_Simple_Tasks_SysView/Middlewares/Third_Party/FreeRTOS/Source/tasks.c
+diff --git a/Middlewares/Third_Party/FreeRTOS/Source/tasks.c b/Middlewares/Third_Party/FreeRTOS/Source/tasks.c
 index f6a6a9b..c6b6d05 100644
---- a/F411CE_RTOS_Simple_Tasks_SysView/Middlewares/Third_Party/FreeRTOS/Source/tasks.c
-+++ b/F411CE_RTOS_Simple_Tasks_SysView/Middlewares/Third_Party/FreeRTOS/Source/tasks.c
+--- a/Middlewares/Third_Party/FreeRTOS/Source/tasks.c
++++ b/Middlewares/Third_Party/FreeRTOS/Source/tasks.c
 @@ -220,6 +220,17 @@ count overflows. */
  	taskRECORD_READY_PRIORITY( ( pxTCB )->uxPriority );												\
  	vListInsertEnd( &( pxReadyTasksLists[ ( pxTCB )->uxPriority ] ), &( ( pxTCB )->xStateListItem ) ); \
