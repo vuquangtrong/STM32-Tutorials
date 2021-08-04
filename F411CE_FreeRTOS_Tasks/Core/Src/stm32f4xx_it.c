@@ -23,7 +23,9 @@
 #include "stm32f4xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#if USE_SEGGER_SYSVIEW
 #include "SEGGER_SYSVIEW.h"
+#endif
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -167,11 +169,15 @@ void DebugMon_Handler(void)
 void EXTI0_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI0_IRQn 0 */
+#if USE_SEGGER_SYSVIEW
   SEGGER_SYSVIEW_RecordEnterISR();
+#endif
   /* USER CODE END EXTI0_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
   /* USER CODE BEGIN EXTI0_IRQn 1 */
+#if USE_SEGGER_SYSVIEW
   SEGGER_SYSVIEW_RecordExitISR();
+#endif
   /* USER CODE END EXTI0_IRQn 1 */
 }
 

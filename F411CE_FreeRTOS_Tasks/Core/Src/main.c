@@ -25,7 +25,15 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 #include <string.h>
+#include "FreeRTOSConfig.h"
+#if USE_SEGGER_SYSVIEW
 #include "SEGGER_SYSVIEW.h"
+////////////////////////////////////////////////////////////////////////////////
+//
+// RE-APPLY THE SEGGER FreeRTOS PATCH AFTER USING CUBEMX TO GENERATE SOURCE CODE
+//
+////////////////////////////////////////////////////////////////////////////////
+#endif
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -35,12 +43,10 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define PROJECT_NAME "FreeRTOS Tasks"
-#define USE_DEFAULT_TASK          0
+#define PROJECT_NAME              "FreeRTOS Tasks"
+#define TASK_1_HIGH_PRIORITY      0
+#define TASK_2_HIGH_PRIORITY      0
 #define USE_HAL_DELAY             0
-#define USE_TASK_1_HIGH_PRIORITY  1
-#define USE_TASK_2_HIGH_PRIORITY  0
-#define KILL_TASKS                0
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -58,50 +64,27 @@ const osThreadAttr_t defaultTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
-
-/* USER CODE BEGIN PV */
-
-// ASCII color table
-const char* RED = "\033[0;31m";
-const char* GREEN = "\033[0;32m";
-const char* YELLOW = "\033[0;33m";
-const char* BLUE = "\033[0;34m";
-const char* MAGENTA = "\033[0;35m";
-const char* CYAN = "\033[0;36m";
-
-osThreadId_t Task1_Handle;
+/* Definitions for Task1 */
+osThreadId_t Task1Handle;
 const osThreadAttr_t Task1_attributes = {
   .name = "Task1",
-#if KILL_TASKS
-  .stack_size = 256 * 4,
-#else
   .stack_size = 128 * 4,
-#endif
-#if USE_TASK_1_HIGH_PRIORITY
-  .priority = (osPriority_t) osPriorityHigh,
-#else
   .priority = (osPriority_t) osPriorityNormal,
-#endif
 };
-uint32_t Task1_delay = 500;
-
-osThreadId_t Task2_Handle;
+/* Definitions for Task2 */
+osThreadId_t Task2Handle;
 const osThreadAttr_t Task2_attributes = {
   .name = "Task2",
-#if KILL_TASKS
-  .stack_size = 256 * 4,
-#else
   .stack_size = 128 * 4,
-#endif
-#if USE_TASK_2_HIGH_PRIORITY
-  .priority = (osPriority_t) osPriorityHigh,
-#else
   .priority = (osPriority_t) osPriorityNormal,
-#endif
 };
-uint32_t Task2_delay = 1000;
-
-uint8_t blink = 1;
+/* USER CODE BEGIN PV */
+typedef struct {
+  uint8_t start;
+  uint8_t end;
+} CounterRange_t;
+CounterRange_t Task1_CounterRange = {'0', '9'};
+CounterRange_t Task2_CounterRange = {'A', 'J'};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -109,6 +92,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
 void StartDefaultTask(void *argument);
+void CounterTask(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -116,59 +100,43 @@ void StartDefaultTask(void *argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-int _read(int file, char *ptr, int len) {
-    HAL_StatusTypeDef hstatus;
-    hstatus = HAL_UART_Receive(&huart1, (uint8_t*) ptr, 1, HAL_MAX_DELAY);
-    if (hstatus == HAL_OK)
-        return 1;
-    else
-        return 0;
-}
-
-int _write(int file, char *ptr, int len) {
-    // block write to UART if it is not ready
-    while(HAL_UART_GetState(&huart1) != HAL_UART_STATE_READY);
-
-    HAL_StatusTypeDef hstatus;
-    hstatus = HAL_UART_Transmit(&huart1, (uint8_t*) ptr, len, HAL_MAX_DELAY);
-    if (hstatus == HAL_OK) {
-        if (SEGGER_SYSVIEW_IsStarted()) SEGGER_SYSVIEW_PrintfHost("OK");
-        return len;
-    } else {
-        if (SEGGER_SYSVIEW_IsStarted()) SEGGER_SYSVIEW_ErrorfHost("ERR");
-        return 0;
-    }
-}
-
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-  blink = !blink;
-  SEGGER_SYSVIEW_PrintfHost("GPIO = %d", GPIO_Pin);
-}
-
-static void CounterTask(void *argument)
+#if ( configUSE_NEWLIB_REENTRANT == 1 )
+int _write(int file, char *ptr, int len)
 {
-  char* name = pcTaskGetName(NULL); // the current active task
-  uint32_t delay = *((uint32_t*)argument);
-  uint8_t counter = 0;
-  printf("%s: delay=%lu\r\n", name, delay);
-  // main loop
-  for(;;)
-  {
-    printf("%s: counter = %u\r\n", name, counter++);
-#if USE_HAL_DELAY
-    HAL_Delay(delay);
-#else
-    osDelay(delay); // 1 tick = 1 ms
+  // block UART if it is not ready
+  while(HAL_UART_GetState(&huart1) != HAL_UART_STATE_READY);
+  // return written bytes
+  return HAL_UART_Transmit(&huart1, (uint8_t*) ptr, len, HAL_MAX_DELAY) == 0 ? len : 0;
+}
 #endif
-#if KILL_TASKS
-    if (counter==16) {
-      printf("%s: ended\r\n", name);
-      vTaskDelete(NULL);
+
+#if ( configUSE_NEWLIB_REENTRANT == 0 )
+void UART_Print(char *msg) {
+  // block UART if it is not ready
+  while(HAL_UART_GetState(&huart1) != HAL_UART_STATE_READY);
+  // return written bytes
+  HAL_UART_Transmit(&huart1, (uint8_t*) msg, strlen(msg), HAL_MAX_DELAY);
+}
+#endif
+
+#if ( configUSE_NEWLIB_REENTRANT == 1 )
+#define LOG(...) \
+    printf(__VA_ARGS__);
+#endif
+#if ( configUSE_NEWLIB_REENTRANT == 0 )
+#define LOG(...) \
+    { \
+      char buffer[64]; \
+      sprintf(buffer, __VA_ARGS__); \
+      UART_Print(buffer); \
     }
 #endif
-  }
-}
 
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  // do something here
+  LOG("Key pressed\r\n");
+}
 /* USER CODE END 0 */
 
 /**
@@ -201,8 +169,17 @@ int main(void)
   MX_GPIO_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-  printf("%s\r\n", PROJECT_NAME);
+  LOG("%s\r\n", PROJECT_NAME);
+#if USE_SEGGER_SYSVIEW
   SEGGER_SYSVIEW_Conf();
+  LOG("SEGGER SYSVIEW Enabled\r\n");
+#endif
+#if ( configUSE_NEWLIB_REENTRANT == 1 )
+  LOG("UART Redirection enabled\r\n");
+  LOG("Re-entrant enabled for newlib\r\n");
+#else
+  LOG("Print directly on UART\r\n");
+#endif
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -222,15 +199,36 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
+#if 0
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
   /* creation of defaultTask */
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+
+  /* creation of Task1 */
+  Task1Handle = osThreadNew(CounterTask, NULL, &Task1_attributes);
+
+  /* creation of Task2 */
+  Task2Handle = osThreadNew(CounterTask, NULL, &Task2_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
+#endif
   /* add threads, ... */
-  Task1_Handle = osThreadNew(CounterTask, (void*)&Task1_delay, &Task1_attributes);
-  Task2_Handle = osThreadNew(CounterTask, (void*)&Task2_delay, &Task2_attributes);
+  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+#if TASK_1_HIGH_PRIORITY | TASK_2_HIGH_PRIORITY
+  osThreadSetPriority(defaultTaskHandle, osPriorityHigh);
+#endif
+
+  Task1Handle = osThreadNew(CounterTask, (void*) &Task1_CounterRange, &Task1_attributes);
+#if TASK_1_HIGH_PRIORITY
+  osThreadSetPriority(Task1Handle, osPriorityHigh);
+#endif
+
+  Task2Handle = osThreadNew(CounterTask, (void*) &Task2_CounterRange, &Task2_attributes);
+#if TASK_2_HIGH_PRIORITY
+  osThreadSetPriority(Task2Handle, osPriorityHigh);
+#endif
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -245,9 +243,6 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    printf("Non-RTOS main thread is running\r\n");
-    HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-    HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -358,7 +353,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : KEY_Pin */
   GPIO_InitStruct.Pin = KEY_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(KEY_GPIO_Port, &GPIO_InitStruct);
 
@@ -382,21 +377,47 @@ static void MX_GPIO_Init(void)
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
-#if !USE_DEFAULT_TASK
-  printf("Default task suspended\r\n");
-  vTaskSuspend(NULL);
-#endif
+//  char* name = pcTaskGetName(NULL);
+//  uint8_t counter = 0;
   /* Infinite loop */
   for(;;)
   {
-    if(blink) {
-      HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-      printf("TickCount = %lu\r\n", osKernelGetTickCount());
-//      SEGGER_SYSVIEW_PrintfHost("TickCount = %d\r\n", osKernelGetTickCount());
-    }
-    osDelay(1000); // 1 tick = 1 ms
+    HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+//    LOG("%s: heart beat %u\r\n", name, counter++);
+    osDelay(500);
   }
   /* USER CODE END 5 */
+}
+
+/* USER CODE BEGIN Header_CounterTask */
+/**
+* @brief Function implementing the Task1 thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_CounterTask */
+void CounterTask(void *argument)
+{
+  /* USER CODE BEGIN CounterTask */
+  char* name = pcTaskGetName(NULL);
+  CounterRange_t* range = (CounterRange_t*)argument;
+  LOG("%s: range = %c : %c\r\n", name, range->start, range->end);
+  uint8_t counter = range->start;
+  /* Infinite loop */
+  for(;;)
+  {
+    LOG("%s: counter = %c\r\n", name, counter++);
+    if(counter > range->end) {
+      //counter = range->start;
+
+    }
+#if USE_HAL_DELAY
+    HAL_Delay(500);
+#else
+    osDelay(500);
+#endif
+  }
+  /* USER CODE END CounterTask */
 }
 
 /**
