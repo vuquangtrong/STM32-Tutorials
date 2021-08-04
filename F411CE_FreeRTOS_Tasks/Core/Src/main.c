@@ -46,7 +46,7 @@
 #define PROJECT_NAME              "FreeRTOS Tasks"
 #define TASK_1_HIGH_PRIORITY      0
 #define TASK_2_HIGH_PRIORITY      0
-#define USE_HAL_DELAY             0
+#define USE_HAL_DELAY             1
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -408,8 +408,7 @@ void CounterTask(void *argument)
   {
     LOG("%s: counter = %c\r\n", name, counter++);
     if(counter > range->end) {
-      //counter = range->start;
-
+      counter = range->start;
     }
 #if USE_HAL_DELAY
     HAL_Delay(500);
