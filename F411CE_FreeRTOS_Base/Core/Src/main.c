@@ -25,6 +25,7 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 #include <string.h>
+#include "FreeRTOSConfig.h"
 #if USE_SEGGER_SYSVIEW
 #include "SEGGER_SYSVIEW.h"
 ////////////////////////////////////////////////////////////////////////////////
@@ -76,6 +77,7 @@ void StartDefaultTask(void *argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+#if ( configUSE_NEWLIB_REENTRANT == 1 )
 int _write(int file, char *ptr, int len)
 {
   // block UART if it is not ready
@@ -83,11 +85,34 @@ int _write(int file, char *ptr, int len)
   // return written bytes
   return HAL_UART_Transmit(&huart1, (uint8_t*) ptr, len, HAL_MAX_DELAY) == 0 ? len : 0;
 }
+#endif
+
+#if ( configUSE_NEWLIB_REENTRANT == 0 )
+void UART_Print(char *msg) {
+  // block UART if it is not ready
+  while(HAL_UART_GetState(&huart1) != HAL_UART_STATE_READY);
+  // return written bytes
+  HAL_UART_Transmit(&huart1, (uint8_t*) msg, strlen(msg), HAL_MAX_DELAY);
+}
+#endif
+
+#if ( configUSE_NEWLIB_REENTRANT == 1 )
+#define LOG(...) \
+    printf(__VA_ARGS__);
+#endif
+#if ( configUSE_NEWLIB_REENTRANT == 0 )
+#define LOG(...) \
+    { \
+      char buffer[64]; \
+      sprintf(buffer, __VA_ARGS__); \
+      UART_Print(buffer); \
+    }
+#endif
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
   // do something here
-  printf("Key pressed\r\n");
+  LOG("Key pressed\r\n");
 }
 /* USER CODE END 0 */
 
@@ -121,10 +146,16 @@ int main(void)
   MX_GPIO_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-  printf("%s\r\n", PROJECT_NAME);
+  LOG("%s\r\n", PROJECT_NAME);
 #if USE_SEGGER_SYSVIEW
   SEGGER_SYSVIEW_Conf();
-  printf("SEGGER SYSVIEW Enabled\r\n");
+  LOG("SEGGER SYSVIEW Enabled\r\n");
+#endif
+#if ( configUSE_NEWLIB_REENTRANT == 1 )
+  LOG("UART Redirection enabled\r\n");
+  LOG("Re-entrant enabled for newlib\r\n");
+#else
+  LOG("Print directly on UART\r\n");
 #endif
   /* USER CODE END 2 */
 
@@ -145,6 +176,7 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
+#if 0
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
@@ -152,7 +184,9 @@ int main(void)
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
+#endif
   /* add threads, ... */
+  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -307,7 +341,7 @@ void StartDefaultTask(void *argument)
   for(;;)
   {
     HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-    printf("%s: heart beat %u\r\n", name, counter++);
+    LOG("%s: heart beat %u\r\n", name, counter++);
     osDelay(500);
   }
   /* USER CODE END 5 */
