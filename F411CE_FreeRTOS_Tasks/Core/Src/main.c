@@ -25,7 +25,6 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 #include <string.h>
-#include "FreeRTOSConfig.h"
 #if USE_SEGGER_SYSVIEW
 #include "SEGGER_SYSVIEW.h"
 ////////////////////////////////////////////////////////////////////////////////
@@ -100,7 +99,6 @@ void CounterTask(void *argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-#if ( configUSE_NEWLIB_REENTRANT == 1 )
 int _write(int file, char *ptr, int len)
 {
   // block UART if it is not ready
@@ -108,34 +106,11 @@ int _write(int file, char *ptr, int len)
   // return written bytes
   return HAL_UART_Transmit(&huart1, (uint8_t*) ptr, len, HAL_MAX_DELAY) == 0 ? len : 0;
 }
-#endif
-
-#if ( configUSE_NEWLIB_REENTRANT == 0 )
-void UART_Print(char *msg) {
-  // block UART if it is not ready
-  while(HAL_UART_GetState(&huart1) != HAL_UART_STATE_READY);
-  // return written bytes
-  HAL_UART_Transmit(&huart1, (uint8_t*) msg, strlen(msg), HAL_MAX_DELAY);
-}
-#endif
-
-#if ( configUSE_NEWLIB_REENTRANT == 1 )
-#define LOG(...) \
-    printf(__VA_ARGS__);
-#endif
-#if ( configUSE_NEWLIB_REENTRANT == 0 )
-#define LOG(...) \
-    { \
-      char buffer[64]; \
-      sprintf(buffer, __VA_ARGS__); \
-      UART_Print(buffer); \
-    }
-#endif
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
   // do something here
-  LOG("Key pressed\r\n");
+  printf("Key pressed\r\n");
 }
 /* USER CODE END 0 */
 
@@ -169,16 +144,10 @@ int main(void)
   MX_GPIO_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-  LOG("%s\r\n", PROJECT_NAME);
+  printf("%s\r\n", PROJECT_NAME);
 #if USE_SEGGER_SYSVIEW
   SEGGER_SYSVIEW_Conf();
-  LOG("SEGGER SYSVIEW Enabled\r\n");
-#endif
-#if ( configUSE_NEWLIB_REENTRANT == 1 )
-  LOG("UART Redirection enabled\r\n");
-  LOG("Re-entrant enabled for newlib\r\n");
-#else
-  LOG("Print directly on UART\r\n");
+  printf("SEGGER SYSVIEW Enabled\r\n");
 #endif
   /* USER CODE END 2 */
 
@@ -383,7 +352,7 @@ void StartDefaultTask(void *argument)
   for(;;)
   {
     HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-//    LOG("%s: heart beat %u\r\n", name, counter++);
+//    printf("%s: heart beat %u\r\n", name, counter++);
     osDelay(500);
   }
   /* USER CODE END 5 */
@@ -401,12 +370,12 @@ void CounterTask(void *argument)
   /* USER CODE BEGIN CounterTask */
   char* name = pcTaskGetName(NULL);
   CounterRange_t* range = (CounterRange_t*)argument;
-  LOG("%s: range = %c : %c\r\n", name, range->start, range->end);
+  printf("%s: range = %c : %c\r\n", name, range->start, range->end);
   uint8_t counter = range->start;
   /* Infinite loop */
   for(;;)
   {
-    LOG("%s: counter = %c\r\n", name, counter++);
+    printf("%s: counter = %c\r\n", name, counter++);
     if(counter > range->end) {
       counter = range->start;
     }
