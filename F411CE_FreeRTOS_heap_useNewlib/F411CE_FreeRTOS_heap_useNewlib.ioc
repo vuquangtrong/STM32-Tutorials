@@ -1,7 +1,10 @@
 #MicroXplorer Configuration settings - do not modify
 FREERTOS.FootprintOK=true
-FREERTOS.IPParameters=Tasks01,configUSE_NEWLIB_REENTRANT,FootprintOK
-FREERTOS.Tasks01=defaultTask,24,128,StartDefaultTask,Default,NULL,Dynamic,NULL,NULL;Task1,8,128,PrintTask,Default,message1,Dynamic,NULL,NULL;Task2,8,128,PrintTask,Default,message2,Dynamic,NULL,NULL
+FREERTOS.IPParameters=Tasks01,configUSE_NEWLIB_REENTRANT,FootprintOK,configMINIMAL_STACK_SIZE,configRECORD_STACK_HIGH_ADDRESS,configCHECK_FOR_STACK_OVERFLOW
+FREERTOS.Tasks01=defaultTask,24,256,StartDefaultTask,Default,NULL,Dynamic,NULL,NULL;Task1,8,256,PrintTask,Default,message1,Dynamic,NULL,NULL;Task2,8,256,PrintTask,Default,message2,Dynamic,NULL,NULL
+FREERTOS.configCHECK_FOR_STACK_OVERFLOW=2
+FREERTOS.configMINIMAL_STACK_SIZE=256
+FREERTOS.configRECORD_STACK_HIGH_ADDRESS=1
 FREERTOS.configUSE_NEWLIB_REENTRANT=1
 File.Version=6
 KeepUserPlacement=false
@@ -86,7 +89,7 @@ ProjectManager.FreePins=false
 ProjectManager.HalAssertFull=false
 ProjectManager.HeapSize=0x200
 ProjectManager.KeepUserCode=true
-ProjectManager.LastFirmware=true
+ProjectManager.LastFirmware=false
 ProjectManager.LibraryCopy=1
 ProjectManager.MainLocation=Core/Src
 ProjectManager.NoMain=false
